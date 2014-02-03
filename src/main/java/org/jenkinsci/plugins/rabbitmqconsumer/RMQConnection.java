@@ -17,6 +17,7 @@ import org.jenkinsci.plugins.rabbitmqconsumer.channels.AbstractRMQChannel;
 import org.jenkinsci.plugins.rabbitmqconsumer.channels.ConsumeRMQChannel;
 import org.jenkinsci.plugins.rabbitmqconsumer.channels.PublishRMQChannel;
 import org.jenkinsci.plugins.rabbitmqconsumer.events.RMQConnectionEvent;
+import org.jenkinsci.plugins.rabbitmqconsumer.extensions.RMQConnectionListenerExtension;
 import org.jenkinsci.plugins.rabbitmqconsumer.listeners.RMQChannelListener;
 import org.jenkinsci.plugins.rabbitmqconsumer.listeners.RMQConnectionListener;
 import org.jenkinsci.plugins.rabbitmqconsumer.notifiers.RMQConnectionNotifier;
@@ -400,6 +401,10 @@ public class RMQConnection implements ShutdownListener, RMQChannelListener, RMQC
         return connection.isOpen();
     }
 
+    public Connection getConnection() {
+        return connection;
+    }
+
     /**
      * @inheritDoc
      * @param event
@@ -412,6 +417,11 @@ public class RMQConnection implements ShutdownListener, RMQChannelListener, RMQC
             } else if (event == RMQConnectionEvent.OPEN) {
                 l.onOpen(this);
             }
+        }
+        if (event == RMQConnectionEvent.CLOSE_COMPLETED) {
+            RMQConnectionListenerExtension.fireOnConnectionClosed(this);
+        } else if (event == RMQConnectionEvent.OPEN) {
+            RMQConnectionListenerExtension.fireOnConnectionOpened(this);
         }
     }
 
